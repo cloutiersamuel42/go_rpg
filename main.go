@@ -45,36 +45,32 @@ func init() {
 
 	charImageAsset := gAssetManager.GetAsset(assets.IdAssetCharacters).(*assets.ImageAsset)
 	gAnimationManager = animation.NewAnimationManager()
-	gAnimationManager.RegisterAnimation(
-		&animation.Animation{
-			Frames: []*ebiten.Image{
-				charImageAsset.GetTileFromOffset(55),
-				charImageAsset.GetTileFromOffset(56),
-				charImageAsset.GetTileFromOffset(57),
-				charImageAsset.GetTileFromOffset(56),
-			},
-			Delay: 8,
-		},
-		animation.IdPlayerIdleAnimation,
-	)
+	gAnimationManager.RegisterAnimation(charImageAsset, []int{55, 56, 57, 56}, 8, animation.IdPlayerIdleAnimationDown)
+	gAnimationManager.RegisterAnimation(charImageAsset, []int{67, 68, 69, 68}, 8, animation.IdPlayerIdleAnimationLeft)
+	gAnimationManager.RegisterAnimation(charImageAsset, []int{79, 80, 81, 80}, 8, animation.IdPlayerIdleAnimationRight)
+	gAnimationManager.RegisterAnimation(charImageAsset, []int{91, 92, 93, 92}, 8, animation.IdPlayerIdleAnimationUp)
 }
 
 func (g *Game) Update() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		g.cam.pos.X += 16
+		g.cam.pos.X += constants.TileSize
 		g.player.pos.X -= 1
+		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationLeft)
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		g.cam.pos.X -= 16
+		g.cam.pos.X -= constants.TileSize
 		g.player.pos.X += 1
+		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationRight)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		g.cam.pos.Y += 16
+		g.cam.pos.Y += constants.TileSize
 		g.player.pos.Y -= 1
+		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationUp)
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		g.cam.pos.Y -= 16
+		g.cam.pos.Y -= constants.TileSize
 		g.player.pos.Y += 1
+		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
 	}
 	return nil
 }
@@ -105,7 +101,7 @@ func main() {
 	g := &Game{
 		player: Player{
 			pos:  vec.Vec2{X: 4, Y: 4},
-			anim: gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimation),
+			anim: gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown),
 		},
 		cam: Camera{
 			pos: vec.Vec2{X: 0, Y: 0},

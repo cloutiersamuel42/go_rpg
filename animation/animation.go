@@ -1,20 +1,21 @@
 package animation
 
 import (
-	"fmt"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const (
 	_ = iota
-	IdPlayerIdleAnimation
+	IdPlayerIdleAnimationDown
+	IdPlayerIdleAnimationUp
+	IdPlayerIdleAnimationLeft
+	IdPlayerIdleAnimationRight
 )
 
 type Animation struct {
 	Frames       []*ebiten.Image
 	Delay        int
-	nFrames      int
+	NFrames      int
 	counter      int
 	currentFrame int
 }
@@ -27,10 +28,9 @@ func (a *Animation) GetCurFrame() *ebiten.Image {
 		a.currentFrame++
 	}
 
-	if a.currentFrame == a.nFrames {
+	if a.currentFrame == a.NFrames {
 		a.currentFrame = 0
 	}
 
-	fmt.Printf("On animation frame %d\n", a.currentFrame)
 	return a.Frames[a.currentFrame]
 }
