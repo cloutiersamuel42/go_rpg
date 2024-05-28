@@ -7,27 +7,24 @@ import (
 	"github.com/cloutiersamuel42/game/animation"
 	"github.com/cloutiersamuel42/game/assets"
 	"github.com/cloutiersamuel42/game/constants"
+	"github.com/cloutiersamuel42/game/player"
 	"github.com/cloutiersamuel42/game/vec"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-var gAssetManager *assets.AssetManager
-var gAnimationManager *animation.AnimationManager
+var (
+	gAssetManager     *assets.AssetManager        = assets.NewAssetManager()
+	gAnimationManager *animation.AnimationManager = animation.NewAnimationManager()
+)
 
 type Game struct {
 	area   Area
 	cam    Camera
-	player Player
+	player player.Player
 }
 
 type Camera struct {
 	pos vec.Vec2
-}
-
-type Player struct {
-	pos  vec.Vec2
-	anim *animation.Animation
 }
 
 type Area struct {
@@ -38,13 +35,9 @@ type Area struct {
 }
 
 func init() {
-	gAssetManager = assets.NewAssetManager()
-	gAssetManager.RegisterAsset(&assets.ImageAsset{Path: "data/basictiles.png"}, assets.IdAssetBasictiles)
-	gAssetManager.RegisterAsset(&assets.ImageAsset{Path: "data/characters.png"}, assets.IdAssetCharacters)
-	gAssetManager.LoadAssets()
+	assets.InitAssets(gAssetManager)
 
 	charImageAsset := gAssetManager.GetAsset(assets.IdAssetCharacters).(*assets.ImageAsset)
-	gAnimationManager = animation.NewAnimationManager()
 	gAnimationManager.RegisterAnimation(charImageAsset, []int{55, 56, 57, 56}, 8, animation.IdPlayerIdleAnimationDown)
 	gAnimationManager.RegisterAnimation(charImageAsset, []int{67, 68, 69, 68}, 8, animation.IdPlayerIdleAnimationLeft)
 	gAnimationManager.RegisterAnimation(charImageAsset, []int{79, 80, 81, 80}, 8, animation.IdPlayerIdleAnimationRight)
@@ -53,24 +46,24 @@ func init() {
 
 func (g *Game) Update() error {
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 		g.cam.pos.X += constants.TileSize
-		g.player.pos.X -= 1
-		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationLeft)
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+		g.player.Pos.X -= 1
+		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationLeft)
+	} else if ebiten.IsKeyPressed(ebiten.KeyRight) {
 		g.cam.pos.X -= constants.TileSize
-		g.player.pos.X += 1
-		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationRight)
+		g.player.Pos.X += 1
+		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationRight)
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
 		g.cam.pos.Y += constants.TileSize
-		g.player.pos.Y -= 1
-		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationUp)
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+		g.player.Pos.Y -= 1
+		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationUp)
+	} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
 		g.cam.pos.Y -= constants.TileSize
-		g.player.pos.Y += 1
-		g.player.anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
+		g.player.Pos.Y += 1
+		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
 	}
 	return nil
 }
@@ -89,8 +82,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	o := &ebiten.DrawImageOptions{}
-	o.GeoM.Translate(g.cam.pos.X+float64(g.player.pos.X*constants.TileSize), g.cam.pos.Y+float64(g.player.pos.Y*constants.TileSize))
-	screen.DrawImage(g.player.anim.GetCurFrame(), o)
+	o.GeoM.Translate(g.cam.pos.X+float64(g.player.Pos.X*constants.TileSize), g.cam.pos.Y+float64(g.player.Pos.Y*constants.TileSize))
+	screen.DrawImage(g.player.Anim.GetCurFrame(), o)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -99,9 +92,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	g := &Game{
-		player: Player{
-			pos:  vec.Vec2{X: 4, Y: 4},
-			anim: gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown),
+		player: player.Player{
+			Pos:  vec.Vec2{X: 4, Y: 4},
+			Anim: gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown),
 		},
 		cam: Camera{
 			pos: vec.Vec2{X: 0, Y: 0},
@@ -109,14 +102,19 @@ func main() {
 		area: Area{
 			name: "Test area",
 			layout: []int{
-				1, 1, 1, 1, 1, 1, 1, 1,
-				1, 4, 4, 4, 4, 4, 4, 1,
-				1, 4, 4, 4, 4, 4, 4, 1,
-				1, 4, 4, 4, 4, 4, 4, 1,
-				1, 1, 1, 18, 1, 1, 1, 1,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
 			},
-			tilesW: 8,
-			tilesH: 5,
+			tilesW: 10,
+			tilesH: 10,
 		},
 	}
 	ebiten.SetWindowSize(640, 480)

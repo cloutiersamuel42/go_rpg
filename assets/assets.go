@@ -39,7 +39,7 @@ func (ia *ImageAsset) LoadAsset() error {
 
 func (ia *ImageAsset) GetTileFromOffset(offset int) *ebiten.Image {
 	if offset == 0 {
-		return nil
+		return ebiten.NewImage(constants.TileSize, constants.TileSize)
 	}
 
 	realOffset := offset - 1
@@ -54,3 +54,9 @@ func (ia *ImageAsset) GetTileFromOffset(offset int) *ebiten.Image {
 }
 
 func (ia *ImageAsset) PathStr() string { return ia.Path }
+
+func InitAssets(am *AssetManager) {
+	am.RegisterAsset(&ImageAsset{Path: "data/basictiles.png"}, IdAssetBasictiles)
+	am.RegisterAsset(&ImageAsset{Path: "data/characters.png"}, IdAssetCharacters)
+	am.LoadAssets()
+}
