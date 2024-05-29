@@ -4,8 +4,10 @@ import (
 	"fmt"
 	_ "image/png"
 	"log"
+	"strconv"
 
 	"github.com/cloutiersamuel42/game/animation"
+	"github.com/cloutiersamuel42/game/area"
 	"github.com/cloutiersamuel42/game/assets"
 	"github.com/cloutiersamuel42/game/camera"
 	"github.com/cloutiersamuel42/game/character"
@@ -21,7 +23,7 @@ var (
 )
 
 type Game struct {
-	area   Area
+	area   *area.Area
 	cam    camera.Camera
 	player character.Character
 }
@@ -34,12 +36,8 @@ func (g *Game) Player() *character.Character {
 	return &g.player
 }
 
-type Area struct {
-	name   string
-	layout []int
-	colMap []int
-	tilesW int
-	tilesH int
+func (g *Game) Area() *area.Area {
+	return g.area
 }
 
 func init() {
@@ -54,13 +52,13 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	tilesAsset := gAssetManager.GetAsset(assets.IdAssetBasictiles).(*assets.ImageAsset)
-	for i := range g.area.layout {
-		x := i % g.area.tilesW
-		y := i / g.area.tilesW
-		if g.area.layout[i] != 0 {
+	for i := range g.area.Layout {
+		x := i % g.area.TilesW
+		y := i / g.area.TilesW
+		if g.area.Layout[i] != 0 {
 			o := &ebiten.DrawImageOptions{}
 			o.GeoM.Translate(float64(x*constants.TileSize)-g.Camera().Pos.X, float64(y*constants.TileSize)-g.Camera().Pos.Y)
-			screen.DrawImage(tilesAsset.GetTileFromOffset(g.area.layout[i]), o)
+			screen.DrawImage(tilesAsset.GetTileFromOffset(g.area.Layout[i]), o)
 		}
 		// fmt.Printf("Drawing tile {x:%d y:%d}\n", x, y)
 	}
@@ -73,9 +71,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	camPos := fmt.Sprintf("Camera pos => x: %f y: %f", g.cam.Pos.X, g.cam.Pos.Y)
 	strPos := fmt.Sprintf("Player pos => x: %f y: %f", g.Player().Pos.X, g.Player().Pos.Y)
 	strDest := fmt.Sprintf("Player dir => x: %f y: %f", g.Player().Dest.X, g.Player().Dest.Y)
-	ebitenutil.DebugPrintAt(screen, camPos, 0, 0)
-	ebitenutil.DebugPrintAt(screen, strPos, 0, 10)
-	ebitenutil.DebugPrintAt(screen, strDest, 0, 20)
+	strFps := strconv.FormatFloat(ebiten.ActualFPS(), 'f', 0, 64)
+	ebitenutil.DebugPrintAt(screen, strFps+" FPS", 0, 0)
+	ebitenutil.DebugPrintAt(screen, camPos, 0, 10)
+	ebitenutil.DebugPrintAt(screen, strPos, 0, 20)
+	ebitenutil.DebugPrintAt(screen, strDest, 0, 30)
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -88,22 +89,54 @@ func main() {
 		cam: camera.Camera{
 			Pos: vec.Vec2{X: 0, Y: 0},
 		},
-		area: Area{
-			name: "Test area",
-			layout: []int{
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
-				66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+		area: &area.Area{
+			Name: "Test area",
+			Layout: []int{
+				66, 66, 66, 66, 66, 1, 1, 1, 1, 1, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
+				66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66, 66,
 			},
-			tilesW: 10,
-			tilesH: 10,
+			ColMap: []int{
+				0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			},
+			TilesW: 20,
+			TilesH: 20,
 		},
 	}
 	g.Player().Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)

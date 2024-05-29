@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/cloutiersamuel42/game/animation"
+	"github.com/cloutiersamuel42/game/area"
 	"github.com/cloutiersamuel42/game/camera"
 	"github.com/cloutiersamuel42/game/constants"
 	"github.com/cloutiersamuel42/game/vec"
@@ -31,6 +32,7 @@ const (
 type GameInterface interface {
 	Camera() *camera.Camera
 	Player() *Character
+	Area() *area.Area
 }
 
 type Character struct {
@@ -50,6 +52,23 @@ func Newcharacter(initialPos vec.Vec2) *Character {
 		state: Idle,
 		dir:   Up,
 		speed: 0.10,
+	}
+}
+
+// Do not check collisions here
+func (c *Character) MoveCharacter() {
+	dX := c.Dest.X - c.Pos.X
+	dY := c.Dest.Y - c.Pos.Y
+
+	if math.Abs(dX) <= c.speed && math.Abs(dY) <= c.speed {
+		c.Pos = c.Dest
+		c.state = Idle
+	} else {
+		if dX != 0 {
+			c.Pos.X += math.Copysign(c.speed, dX)
+		} else if dY != 0 {
+			c.Pos.Y += math.Copysign(c.speed, dY)
+		}
 	}
 }
 
@@ -84,23 +103,7 @@ func (player *Character) UpdatePlayer(g GameInterface, am *animation.AnimationMa
 		}
 	}
 
-	if player.Moving() {
-		dX := player.Dest.X - player.Pos.X
-		dY := player.Dest.Y - player.Pos.Y
-
-		g.Camera().MoveCamera(player.speed * constants.TileSize)
-
-		if math.Abs(dX) <= player.speed && math.Abs(dY) <= player.speed {
-			player.Pos = player.Dest
-			player.state = Idle
-		} else {
-			if dX != 0 {
-				player.Pos.X += math.Copysign(player.speed, dX)
-			} else if dY != 0 {
-				player.Pos.Y += math.Copysign(player.speed, dY)
-			}
-		}
-	}
+	player.UpdateCharacterLogic(g, true)
 }
 
 func (c *Character) UpdateAnimation(am *animation.AnimationManager) {
@@ -117,10 +120,21 @@ func (c *Character) UpdateAnimation(am *animation.AnimationManager) {
 	}
 }
 
-func (c *Character) UpdateCharacterLogic() {
-	switch c.state {
-	case MovLeft:
+func (c *Character) IsTileWalkable(g GameInterface, dir State) bool {
+	return g.Area().GetCol(c.Dest) == 0
+}
 
+func (c *Character) UpdateCharacterLogic(g GameInterface, moveCam bool) {
+	if c.Moving() {
+		if c.IsTileWalkable(g, c.state) {
+			if moveCam {
+				g.Camera().MoveCamera(c.speed * constants.TileSize)
+			}
+			c.MoveCharacter()
+		} else {
+			c.state = Idle
+			c.Dest = c.Pos
+		}
 	}
 }
 
