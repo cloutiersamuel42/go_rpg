@@ -23,6 +23,10 @@ type Animation struct {
 
 // Increments animation counter and returns current image
 func (a *Animation) GetCurFrame() *ebiten.Image {
+	if a.NFrames == 1 {
+		return a.Frames[0]
+	}
+
 	if a.counter < a.Delay {
 		a.counter++
 	} else {

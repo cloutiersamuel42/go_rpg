@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	_ "image/png"
 	"log"
 
 	"github.com/cloutiersamuel42/game/animation"
 	"github.com/cloutiersamuel42/game/assets"
+	"github.com/cloutiersamuel42/game/camera"
+	"github.com/cloutiersamuel42/game/character"
 	"github.com/cloutiersamuel42/game/constants"
-	"github.com/cloutiersamuel42/game/player"
 	"github.com/cloutiersamuel42/game/vec"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 var (
@@ -19,12 +22,16 @@ var (
 
 type Game struct {
 	area   Area
-	cam    Camera
-	player player.Player
+	cam    camera.Camera
+	player character.Character
 }
 
-type Camera struct {
-	pos vec.Vec2
+func (g *Game) Camera() *camera.Camera {
+	return &g.cam
+}
+
+func (g *Game) Player() *character.Character {
+	return &g.player
 }
 
 type Area struct {
@@ -36,35 +43,11 @@ type Area struct {
 
 func init() {
 	assets.InitAssets(gAssetManager)
-
-	charImageAsset := gAssetManager.GetAsset(assets.IdAssetCharacters).(*assets.ImageAsset)
-	gAnimationManager.RegisterAnimation(charImageAsset, []int{55, 56, 57, 56}, 8, animation.IdPlayerIdleAnimationDown)
-	gAnimationManager.RegisterAnimation(charImageAsset, []int{67, 68, 69, 68}, 8, animation.IdPlayerIdleAnimationLeft)
-	gAnimationManager.RegisterAnimation(charImageAsset, []int{79, 80, 81, 80}, 8, animation.IdPlayerIdleAnimationRight)
-	gAnimationManager.RegisterAnimation(charImageAsset, []int{91, 92, 93, 92}, 8, animation.IdPlayerIdleAnimationUp)
+	animation.InitAnimations(gAssetManager, gAnimationManager)
 }
 
 func (g *Game) Update() error {
-
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		g.cam.pos.X += constants.TileSize
-		g.player.Pos.X -= 1
-		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationLeft)
-	} else if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		g.cam.pos.X -= constants.TileSize
-		g.player.Pos.X += 1
-		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationRight)
-	}
-
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		g.cam.pos.Y += constants.TileSize
-		g.player.Pos.Y -= 1
-		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationUp)
-	} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		g.cam.pos.Y -= constants.TileSize
-		g.player.Pos.Y += 1
-		g.player.Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
-	}
+	g.Player().UpdatePlayer(g, gAnimationManager)
 	return nil
 }
 
@@ -75,15 +58,21 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		y := i / g.area.tilesW
 		if g.area.layout[i] != 0 {
 			o := &ebiten.DrawImageOptions{}
-			o.GeoM.Translate(g.cam.pos.X+float64(x*constants.TileSize), g.cam.pos.Y+float64(y*constants.TileSize))
+			o.GeoM.Translate(g.Camera().Pos.X+float64(x*constants.TileSize), g.Camera().Pos.Y+float64(y*constants.TileSize))
 			screen.DrawImage(tilesAsset.GetTileFromOffset(g.area.layout[i]), o)
 		}
 		// fmt.Printf("Drawing tile {x:%d y:%d}\n", x, y)
 	}
 
 	o := &ebiten.DrawImageOptions{}
-	o.GeoM.Translate(g.cam.pos.X+float64(g.player.Pos.X*constants.TileSize), g.cam.pos.Y+float64(g.player.Pos.Y*constants.TileSize))
-	screen.DrawImage(g.player.Anim.GetCurFrame(), o)
+	o.GeoM.Translate(g.Camera().Pos.X+float64(g.Player().Pos.X*constants.TileSize), g.Camera().Pos.Y+float64(g.Player().Pos.Y*constants.TileSize))
+	screen.DrawImage(g.Player().Anim.GetCurFrame(), o)
+
+	// Debug print
+	strPos := fmt.Sprintf("Player pos => x: %f y: %f", g.Player().Pos.X, g.Player().Pos.Y)
+	strDest := fmt.Sprintf("Player dir => x: %f y: %f", g.Player().Dest.X, g.Player().Dest.Y)
+	ebitenutil.DebugPrintAt(screen, strPos, 0, 0)
+	ebitenutil.DebugPrintAt(screen, strDest, 0, 20)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -92,12 +81,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	g := &Game{
-		player: player.Player{
-			Pos:  vec.Vec2{X: 4, Y: 4},
-			Anim: gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown),
-		},
-		cam: Camera{
-			pos: vec.Vec2{X: 0, Y: 0},
+		player: *character.Newcharacter(vec.Vec2{X: 2, Y: 2}),
+		cam: camera.Camera{
+			Pos: vec.Vec2{X: 0, Y: 0},
 		},
 		area: Area{
 			name: "Test area",
@@ -117,7 +103,8 @@ func main() {
 			tilesH: 10,
 		},
 	}
-	ebiten.SetWindowSize(640, 480)
+	g.Player().Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
+	ebiten.SetWindowSize(1080, 960)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
