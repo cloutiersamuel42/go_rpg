@@ -37,6 +37,7 @@ func (g *Game) Player() *character.Character {
 type Area struct {
 	name   string
 	layout []int
+	colMap []int
 	tilesW int
 	tilesH int
 }
@@ -58,20 +59,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		y := i / g.area.tilesW
 		if g.area.layout[i] != 0 {
 			o := &ebiten.DrawImageOptions{}
-			o.GeoM.Translate(g.Camera().Pos.X+float64(x*constants.TileSize), g.Camera().Pos.Y+float64(y*constants.TileSize))
+			o.GeoM.Translate(float64(x*constants.TileSize)-g.Camera().Pos.X, float64(y*constants.TileSize)-g.Camera().Pos.Y)
 			screen.DrawImage(tilesAsset.GetTileFromOffset(g.area.layout[i]), o)
 		}
 		// fmt.Printf("Drawing tile {x:%d y:%d}\n", x, y)
 	}
 
 	o := &ebiten.DrawImageOptions{}
-	o.GeoM.Translate(g.Camera().Pos.X+float64(g.Player().Pos.X*constants.TileSize), g.Camera().Pos.Y+float64(g.Player().Pos.Y*constants.TileSize))
+	o.GeoM.Translate(float64(g.Player().Pos.X*constants.TileSize)-g.Camera().Pos.X, float64(g.Player().Pos.Y*constants.TileSize)-g.Camera().Pos.Y)
 	screen.DrawImage(g.Player().Anim.GetCurFrame(), o)
 
 	// Debug print
+	camPos := fmt.Sprintf("Camera pos => x: %f y: %f", g.cam.Pos.X, g.cam.Pos.Y)
 	strPos := fmt.Sprintf("Player pos => x: %f y: %f", g.Player().Pos.X, g.Player().Pos.Y)
 	strDest := fmt.Sprintf("Player dir => x: %f y: %f", g.Player().Dest.X, g.Player().Dest.Y)
-	ebitenutil.DebugPrintAt(screen, strPos, 0, 0)
+	ebitenutil.DebugPrintAt(screen, camPos, 0, 0)
+	ebitenutil.DebugPrintAt(screen, strPos, 0, 10)
 	ebitenutil.DebugPrintAt(screen, strDest, 0, 20)
 }
 
@@ -104,7 +107,7 @@ func main() {
 		},
 	}
 	g.Player().Anim = gAnimationManager.GetAnimation(animation.IdPlayerIdleAnimationDown)
-	ebiten.SetWindowSize(1080, 960)
+	ebiten.SetWindowSize(320*2, 240*2)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
