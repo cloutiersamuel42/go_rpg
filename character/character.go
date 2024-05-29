@@ -56,7 +56,7 @@ func Newcharacter(initialPos vec.Vec2) *Character {
 func (player *Character) UpdatePlayer(g GameInterface, am *animation.AnimationManager) {
 	if !player.Moving() {
 		player.Dest = player.Pos
-		g.Camera().Dest = g.Camera().Pos
+		g.Camera().SetDestination(g.Camera().Pos)
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			player.Dest.X -= 1
 			g.Camera().Dest.X -= constants.TileSize
@@ -87,19 +87,8 @@ func (player *Character) UpdatePlayer(g GameInterface, am *animation.AnimationMa
 	if player.Moving() {
 		dX := player.Dest.X - player.Pos.X
 		dY := player.Dest.Y - player.Pos.Y
-		camDX := g.Camera().Dest.X - g.Camera().Pos.X
-		camDY := g.Camera().Dest.Y - g.Camera().Pos.Y
-		camSpeed := player.speed * constants.TileSize
 
-		if math.Abs(camDX) <= camSpeed && math.Abs(camDY) <= camSpeed {
-			g.Camera().Pos = g.Camera().Dest
-		} else {
-			if camDX != 0 {
-				g.Camera().Pos.X += math.Copysign(camSpeed, camDX)
-			} else if camDY != 0 {
-				g.Camera().Pos.Y += math.Copysign(camSpeed, camDY)
-			}
-		}
+		g.Camera().MoveCamera(player.speed * constants.TileSize)
 
 		if math.Abs(dX) <= player.speed && math.Abs(dY) <= player.speed {
 			player.Pos = player.Dest
