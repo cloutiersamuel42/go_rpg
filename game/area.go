@@ -1,4 +1,4 @@
-package area
+package game
 
 import "github.com/cloutiersamuel42/game/vec"
 

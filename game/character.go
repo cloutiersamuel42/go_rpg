@@ -1,11 +1,9 @@
-package character
+package game
 
 import (
 	"math"
 
 	"github.com/cloutiersamuel42/game/animation"
-	"github.com/cloutiersamuel42/game/area"
-	"github.com/cloutiersamuel42/game/camera"
 	"github.com/cloutiersamuel42/game/constants"
 	"github.com/cloutiersamuel42/game/vec"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -28,12 +26,6 @@ const (
 	Left
 	Right
 )
-
-type GameInterface interface {
-	Camera() *camera.Camera
-	Player() *Character
-	Area() *area.Area
-}
 
 type Character struct {
 	Pos   vec.Vec2
@@ -72,7 +64,7 @@ func (c *Character) MoveCharacter() {
 	}
 }
 
-func (player *Character) UpdatePlayer(g GameInterface, am *animation.AnimationManager) {
+func (player *Character) UpdatePlayer(g *Game, am *animation.AnimationManager) {
 	if !player.Moving() {
 		player.Dest = player.Pos
 		g.Camera().SetDestination(g.Camera().Pos)
@@ -120,11 +112,11 @@ func (c *Character) UpdateAnimation(am *animation.AnimationManager) {
 	}
 }
 
-func (c *Character) IsTileWalkable(g GameInterface, dir State) bool {
+func (c *Character) IsTileWalkable(g *Game, dir State) bool {
 	return g.Area().GetCol(c.Dest) == 0
 }
 
-func (c *Character) UpdateCharacterLogic(g GameInterface, moveCam bool) {
+func (c *Character) UpdateCharacterLogic(g *Game, moveCam bool) {
 	if c.Moving() {
 		if c.IsTileWalkable(g, c.state) {
 			if moveCam {
