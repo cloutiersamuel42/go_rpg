@@ -8,6 +8,7 @@ type Area struct {
 	ColMap []int
 	TilesW int
 	TilesH int
+	NPCs   []*Character
 }
 
 func (a *Area) GetCol(coords vec.Vec2) int {
@@ -20,4 +21,8 @@ func (a *Area) GetCol(coords vec.Vec2) int {
 	}
 
 	return a.ColMap[y*a.TilesH+x]
+}
+
+func (a *Area) AddCharacter(c *Character) {
+	a.NPCs = append(a.NPCs, c)
 }

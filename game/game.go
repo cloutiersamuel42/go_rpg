@@ -83,7 +83,7 @@ func NewGame() *Game {
 	return &Game{
 		player: *Newcharacter(vec.Vec2{X: 2, Y: 2}),
 		cam: Camera{
-			Pos: vec.Vec2{X: 0, Y: 0},
+			Pos: vec.Vec2{X: -100, Y: -100},
 		},
 		area: &Area{
 			Name: "Test area",

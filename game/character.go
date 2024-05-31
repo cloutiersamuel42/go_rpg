@@ -73,28 +73,26 @@ func (player *Character) UpdatePlayer(g *Game, am *animation.AnimationManager) {
 			g.Camera().Dest.X -= constants.TileSize
 			player.state = MovLeft
 			player.dir = Left
-			player.UpdateAnimation(am)
 		} else if ebiten.IsKeyPressed(ebiten.KeyRight) {
 			player.Dest.X += 1
 			g.Camera().Dest.X += constants.TileSize
 			player.state = MovRight
 			player.dir = Right
-			player.UpdateAnimation(am)
 		} else if ebiten.IsKeyPressed(ebiten.KeyUp) {
 			player.Dest.Y -= 1
 			g.Camera().Dest.Y -= constants.TileSize
 			player.state = MovUp
 			player.dir = Up
-			player.UpdateAnimation(am)
 		} else if ebiten.IsKeyPressed(ebiten.KeyDown) {
 			player.Dest.Y += 1
 			g.Camera().Dest.Y += constants.TileSize
 			player.state = MovDown
 			player.dir = Down
-			player.UpdateAnimation(am)
+
 		}
 	}
 
+	player.UpdateAnimation(am)
 	player.UpdateCharacterLogic(g, true)
 }
 
@@ -102,13 +100,24 @@ func (c *Character) UpdateAnimation(am *animation.AnimationManager) {
 	// TODO put directional animations in character struct maybe
 	switch c.state {
 	case MovLeft:
-		c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationLeft)
+		c.Anim = am.GetAnimation(animation.IdPlayerWalkingLeft)
 	case MovRight:
-		c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationRight)
+		c.Anim = am.GetAnimation(animation.IdPlayerWalkingRight)
 	case MovUp:
-		c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationUp)
+		c.Anim = am.GetAnimation(animation.IdPlayerWalkingUp)
 	case MovDown:
-		c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationDown)
+		c.Anim = am.GetAnimation(animation.IdPlayerWalkingDown)
+	case Idle:
+		switch c.dir {
+		case Up:
+			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationUp)
+		case Down:
+			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationDown)
+		case Left:
+			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationLeft)
+		case Right:
+			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationRight)
+		}
 	}
 }
 

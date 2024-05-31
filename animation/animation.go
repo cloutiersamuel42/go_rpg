@@ -7,10 +7,14 @@ import (
 
 const (
 	_ = iota
-	IdPlayerIdleAnimationDown
 	IdPlayerIdleAnimationUp
+	IdPlayerIdleAnimationDown
 	IdPlayerIdleAnimationLeft
 	IdPlayerIdleAnimationRight
+	IdPlayerWalkingUp
+	IdPlayerWalkingDown
+	IdPlayerWalkingLeft
+	IdPlayerWalkingRight
 )
 
 type Animation struct {
@@ -44,8 +48,12 @@ func (a *Animation) GetCurFrame() *ebiten.Image {
 
 func InitAnimations(asm *assets.AssetManager, anm *AnimationManager) {
 	charImageAsset := asm.GetAsset(assets.IdAssetCharacters).(*assets.ImageAsset)
-	anm.RegisterAnimation(charImageAsset, []int{55, 56, 57, 56}, 8, IdPlayerIdleAnimationDown)
-	anm.RegisterAnimation(charImageAsset, []int{67, 68, 69, 68}, 8, IdPlayerIdleAnimationLeft)
-	anm.RegisterAnimation(charImageAsset, []int{79, 80, 81, 80}, 8, IdPlayerIdleAnimationRight)
-	anm.RegisterAnimation(charImageAsset, []int{91, 92, 93, 92}, 8, IdPlayerIdleAnimationUp)
+	anm.RegisterAnimation(charImageAsset, []int{5}, 0, IdPlayerIdleAnimationDown)
+	anm.RegisterAnimation(charImageAsset, []int{17}, 0, IdPlayerIdleAnimationLeft)
+	anm.RegisterAnimation(charImageAsset, []int{29}, 0, IdPlayerIdleAnimationRight)
+	anm.RegisterAnimation(charImageAsset, []int{41}, 0, IdPlayerIdleAnimationUp)
+	anm.RegisterAnimation(charImageAsset, []int{4, 5, 6, 5}, 8, IdPlayerWalkingDown)
+	anm.RegisterAnimation(charImageAsset, []int{16, 17, 18, 17}, 8, IdPlayerWalkingLeft)
+	anm.RegisterAnimation(charImageAsset, []int{28, 29, 30, 29}, 8, IdPlayerWalkingRight)
+	anm.RegisterAnimation(charImageAsset, []int{40, 41, 42, 41}, 8, IdPlayerWalkingUp)
 }
