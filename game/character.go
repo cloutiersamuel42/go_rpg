@@ -27,13 +27,25 @@ const (
 	Right
 )
 
+type CharacterDirectionAnimation struct {
+	IdleUp    *animation.Animation
+	IdleDown  *animation.Animation
+	IdleLeft  *animation.Animation
+	IdleRight *animation.Animation
+	WalkUp    *animation.Animation
+	WalkDown  *animation.Animation
+	WalkLeft  *animation.Animation
+	WalkRight *animation.Animation
+}
+
 type Character struct {
-	Pos   vec.Vec2
-	Dest  vec.Vec2
-	Anim  *animation.Animation
-	state State
-	dir   Direction
-	speed float64
+	Pos        vec.Vec2
+	Dest       vec.Vec2
+	Anim       *animation.Animation
+	Animations CharacterDirectionAnimation
+	state      State
+	dir        Direction
+	speed      float64
 }
 
 func Newcharacter(initialPos vec.Vec2) *Character {
@@ -92,31 +104,31 @@ func (player *Character) UpdatePlayer(g *Game, am *animation.AnimationManager) {
 		}
 	}
 
-	player.UpdateAnimation(am)
+	player.UpdateAnimation() // this is shit but good enough for now
 	player.UpdateCharacterLogic(g, true)
 }
 
-func (c *Character) UpdateAnimation(am *animation.AnimationManager) {
+func (c *Character) UpdateAnimation() {
 	// TODO put directional animations in character struct maybe
 	switch c.state {
 	case MovLeft:
-		c.Anim = am.GetAnimation(animation.IdPlayerWalkingLeft)
+		c.Anim = c.Animations.WalkLeft
 	case MovRight:
-		c.Anim = am.GetAnimation(animation.IdPlayerWalkingRight)
+		c.Anim = c.Animations.WalkRight
 	case MovUp:
-		c.Anim = am.GetAnimation(animation.IdPlayerWalkingUp)
+		c.Anim = c.Animations.WalkUp
 	case MovDown:
-		c.Anim = am.GetAnimation(animation.IdPlayerWalkingDown)
+		c.Anim = c.Animations.WalkDown
 	case Idle:
 		switch c.dir {
 		case Up:
-			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationUp)
+			c.Anim = c.Animations.IdleUp
 		case Down:
-			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationDown)
+			c.Anim = c.Animations.IdleDown
 		case Left:
-			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationLeft)
+			c.Anim = c.Animations.IdleLeft
 		case Right:
-			c.Anim = am.GetAnimation(animation.IdPlayerIdleAnimationRight)
+			c.Anim = c.Animations.IdleRight
 		}
 	}
 }

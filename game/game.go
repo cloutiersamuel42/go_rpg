@@ -43,6 +43,7 @@ func init() {
 
 func (g *Game) Update() error {
 	g.Player().UpdatePlayer(g, AnimationManager)
+	g.area.UpdateNPCs(g)
 	return nil
 }
 
@@ -62,6 +63,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	o := &ebiten.DrawImageOptions{}
 	o.GeoM.Translate(float64(g.Player().Pos.X*constants.TileSize)-g.Camera().Pos.X, float64(g.Player().Pos.Y*constants.TileSize)-g.Camera().Pos.Y)
 	screen.DrawImage(g.Player().Anim.GetCurFrame(), o)
+
+	g.area.RenderNPCs(screen, &g.cam)
 
 	// Debug print
 	camPos := fmt.Sprintf("Camera pos => x: %f y: %f", g.cam.Pos.X, g.cam.Pos.Y)
@@ -83,7 +86,7 @@ func NewGame() *Game {
 	return &Game{
 		player: *Newcharacter(vec.Vec2{X: 2, Y: 2}),
 		cam: Camera{
-			Pos: vec.Vec2{X: -100, Y: -100},
+			Pos: vec.Vec2{X: -112, Y: -96},
 		},
 		area: &Area{
 			Name: "Test area",
